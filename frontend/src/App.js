@@ -10,6 +10,9 @@ function App() {
   const [hasGenerated, setHasGenerated] = useState(false);
   const [error, setError] = useState('');
 
+  // Get backend API base url from environment variable
+  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
   const generateEmail = async () => {
     if (!prompt.trim()) {
       setError('Please enter an email prompt.');
@@ -18,7 +21,7 @@ function App() {
     setError('');
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:5000/api/generate-email', { prompt });
+      const response = await axios.post(`${apiUrl}/api/generate-email`, { prompt });
       setGeneratedEmail(response.data.email || '');
       setHasGenerated(true);
     } catch (err) {
@@ -26,6 +29,7 @@ function App() {
     }
     setLoading(false);
   };
+ 
 
   const sendEmail = async () => {
     if (!recipient.trim()) {
@@ -43,7 +47,7 @@ function App() {
     setError('');
     setLoading(true);
     try {
-      await axios.post('http://localhost:5000/api/send-email', {
+      await axios.post(`${apiUrl}/api/send-email`, {
         to: recipient,
         subject,
         body: generatedEmail
@@ -97,6 +101,26 @@ function App() {
         >
           {loading ? 'Generating...' : 'Generate Email'}
         </button>
+        <button
+          onClick={()=>{
+            setRecipient('');
+            setPrompt('');
+            setGeneratedEmail('');
+            setSubject('AI generated email');
+            setError('');
+            setHasGenerated(false);
+          }}
+          style={{ ...styles.button,background:'#ccc',colors: '#333',marginBottom:12}}>
+            Clear All
+        </button>
+        <label style={styles.label}>Recipient Email</label>
+        <input
+        type="email"
+        value={recipient}
+        onChange={e => setRecipient(e.target.value)}
+        style={styles.input}
+        placeholder="example@example.com"
+        disabled={loading}/>
 
         {hasGenerated && (
           <>
@@ -117,6 +141,7 @@ function App() {
               style={styles.textarea}
               disabled={loading}
             />
+
 
             <button
               onClick={sendEmail}
@@ -166,7 +191,7 @@ const styles = {
     fontSize: 32,
     letterSpacing: 1,
     color: '#fff',
-    textShadow: '0 2px 10px #2a5596, 0 0 10px #7df'
+    textShadow: '0 2px 10px #9da9bbff, 0 0 10px #7df'
   },
   label: {
     display: 'block',
@@ -233,5 +258,6 @@ const styles = {
     letterSpacing: 0.2
   }
 };
+
 
 export default App;
